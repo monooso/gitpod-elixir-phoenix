@@ -27,7 +27,7 @@ ENV PATH="$HOME/.pg_ctl/bin:$PATH"
 ENV DATABASE_URL="postgresql://gitpod@localhost"
 ENV PGHOSTADDR="127.0.0.1"
 ENV PGDATABASE="postgres"
-COPY --chown=gitpod:gitpod ./.gitpod/start-db.bash $HOME/.bashrc.d/200-start-db
+COPY --chown=gitpod:gitpod ./start-db.bash $HOME/.bashrc.d/200-start-db
 
 # -----------------------------------------------------------------------------
 # Install asdf, used to manage language versions
