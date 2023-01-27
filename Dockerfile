@@ -82,9 +82,4 @@ RUN asdf install nodejs 18.13.0 && asdf global nodejs 18.13.0
 # Install Phoenix dependencies
 RUN sudo install-packages inotify-tools
 
-# Install Hex and Rebar
-RUN asdf reshim \
-    && mix local.hex --force \
-    && mix local.rebar --force
-
 USER gitpod
