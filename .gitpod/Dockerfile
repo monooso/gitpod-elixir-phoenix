@@ -1,5 +1,9 @@
 FROM gitpod/workspace-full
 
+# -----------------------------------------------------------------------------
+# PostgreSQL
+# -----------------------------------------------------------------------------
+# Install PostgreSQL 15
 ENV PGWORKSPACE="/workspace/.pgsql"
 ENV PGDATA="$PGWORKSPACE/data"
 
@@ -7,10 +11,6 @@ RUN sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release 
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
     && sudo apt -y update
 
-# -----------------------------------------------------------------------------
-# PostgreSQL
-# -----------------------------------------------------------------------------
-# Install PostgreSQL 15
 RUN sudo install-packages postgresql-15 postgresql-contrib-15
 
 # Setup PostgreSQL server for user gitpod
@@ -22,19 +22,12 @@ RUN PGDATA="${PGDATA//\/workspace/$HOME}" \
  && initdb -D $PGDATA \
  && printf '#!/bin/bash\npg_ctl -D $PGDATA -l ~/.pg_ctl/log -o "-k ~/.pg_ctl/sockets" start\n' > ~/.pg_ctl/bin/pg_start \
  && printf '#!/bin/bash\npg_ctl -D $PGDATA -l ~/.pg_ctl/log -o "-k ~/.pg_ctl/sockets" stop\n' > ~/.pg_ctl/bin/pg_stop \
- && chmod +x ~/.pg_ctl/bin/* \
- && printf '%s\n' '# Auto-start PostgreSQL server' \
-                  "test ! -e \$PGWORKSPACE && test -e ${PGDATA%/data} && mv ${PGDATA%/data} /workspace" \
-                  '[[ $(pg_ctl status | grep PID) ]] || pg_start > /dev/null' > ~/.bashrc.d/200-postgresql-launch
+ && chmod +x ~/.pg_ctl/bin/*
 ENV PATH="$HOME/.pg_ctl/bin:$PATH"
 ENV DATABASE_URL="postgresql://gitpod@localhost"
 ENV PGHOSTADDR="127.0.0.1"
 ENV PGDATABASE="postgres"
-
-# -----------------------------------------------------------------------------
-# Neovim, as required by the VSCode Neovim plugin
-# -----------------------------------------------------------------------------
-RUN brew install neovim
+COPY --chown=gitpod:gitpod ./.gitpod/start-db.bash $HOME/.bashrc.d/200-start-db
 
 # -----------------------------------------------------------------------------
 # Install asdf, used to manage language versions
@@ -88,3 +81,5 @@ RUN asdf install nodejs 18.13.0 && asdf global nodejs 18.13.0
 # -----------------------------------------------------------------------------
 # Install Phoenix dependencies
 RUN sudo install-packages inotify-tools
+
+USER gitpod
